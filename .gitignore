@@ -6,7 +6,6 @@ node_modules/
 
 # Файлы окружения и конфигурации
 .env
-.dockerignore
 
 # Лог-файлы
 *.log

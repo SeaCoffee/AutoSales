@@ -2,7 +2,6 @@ mysql/mysql.sock
 mysql/data/
 .venv/
 storage/media/
-client/
 node_modules/
 
 # Файлы окружения и конфигурации

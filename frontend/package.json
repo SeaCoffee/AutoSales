@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "cross-env BUILD_PATH=../client react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "watch": "npm-watch"
@@ -57,3 +57,4 @@
     ]
   }
 }
+

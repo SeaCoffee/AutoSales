@@ -3,6 +3,8 @@ mysql/data/
 .venv/
 storage/media/
 node_modules/
+client/static/
+
 
 # Файлы окружения и конфигурации
 .env

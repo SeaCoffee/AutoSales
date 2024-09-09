@@ -1,8 +1,7 @@
 mysql/mysql.sock
-mysql/
+mysql/data/
 .venv/
 storage/media/
-frontend/
 client/
 node_modules/
 
@@ -18,9 +17,9 @@ __pycache__/
 *.pyc
 *.pyo
 
-# Локальные конфигурации IDE
+# Настройки IDE
 .idea/
-.vscode/
 
 # Файлы Docker
 docker-compose.override.yml
+

@@ -1,8 +1,7 @@
-mysql/mysql.sock
-mysql/data/
-
 .venv/
 .idea/
+
+mysql/
 
 client/static/
 

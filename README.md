@@ -27,8 +27,8 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
    
    cd AutoSales
 
-3. Setup Frontend
-4. 
+2. Setup Frontend
+ 
    Open a new terminal, navigate to the frontend directory, and run:
    
    cd frontend
@@ -40,7 +40,7 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
    Frontend Environment Variables: Ensure that the frontend directory also contains an .env file with the following setting:
    BUILD_PATH='../client'
 
-5. Setup Backend
+3. Setup Backend
    
    In the main terminal, run:
    
@@ -48,6 +48,14 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
 
    Environment Variables: Fill out the .env file with the necessary data. (use env_example for example)
 
-2. Access the Platform
+4. Access the Platform
 
   Open your web browser and go to http://localhost/ to access the platform.
+
+5. Before superuser create, ensure that you fill out 'role' table in db:
+
+Role.objects.create(name='buyer', created_at=now, updated_at=now)
+Role.objects.create(name='seller', created_at=now, updated_at=now)
+Role.objects.create(name='manager', created_at=now, updated_at=now)
+Role.objects.create(name='admin', created_at=now, updated_at=now)
+

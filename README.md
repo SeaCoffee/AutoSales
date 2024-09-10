@@ -50,12 +50,45 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
 
 4. Access the Platform
 
-  Open your web browser and go to http://localhost/ to access the platform.
+   Open your web browser and go to http://localhost/ to access the platform.
 
-5. Before superuser create, ensure that you fill out 'role' table in db:
+   Note: After registration, all users except superusers and platform managers will have their accounts activated via email. To ensure proper testing,
+   please use a valid email address to receive the confirmation email.
 
-Role.objects.create(name='buyer', created_at=now, updated_at=now)
-Role.objects.create(name='seller', created_at=now, updated_at=now)
-Role.objects.create(name='manager', created_at=now, updated_at=now)
-Role.objects.create(name='admin', created_at=now, updated_at=now)
+6. Before superuser create, ensure that you fill out the 'role' table in the database:
+
+  Role.objects.create(name='buyer', created_at=now, updated_at=now)  
+  Role.objects.create(name='seller', created_at=now, updated_at=now)  
+  Role.objects.create(name='manager', created_at=now, updated_at=now)  
+  Role.objects.create(name='admin', created_at=now, updated_at=now)  
+
+To populate the database with initial data for currencies, car brands, and models, use the following SQL statements.
+
+To populate the currency table with basic currency information, use this SQL query. This will insert records for USD, EUR, and UAH:
+
+INSERT INTO currency (currency_code, rate, created_at, updated_at)
+VALUES 
+('USD', 1.0, NOW(), NOW()),
+('EUR', 0.85, NOW(), NOW()),
+('UAH', 36.6, NOW(), NOW());
+
+To insert car brands into the brand table, use the following query:
+
+INSERT INTO brand (name, created_at, updated_at) 
+VALUES 
+('Toyota', NOW(), NOW()), 
+('Honda', NOW(), NOW());
+
+To add car models and link them to their respective brands in the model_name table, use the following query. The brand_id should match the corresponding brand in the brand table:
+
+INSERT INTO model_name (brand_id, name, created_at, updated_at) 
+VALUES 
+(1, 'Corolla', NOW(), NOW()), 
+(2, 'Civic', NOW(), NOW());
+
+Important Notes:
+- brand_id in the model_name table refers to the corresponding id of the brand in the brand table.
+- currency_code is the unique code for the currency, such as 'USD', 'EUR', 'UAH'.
+- rate is the exchange rate relative to the base currency (e.g., 1.0 for USD).
+
 

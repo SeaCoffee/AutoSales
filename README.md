@@ -24,10 +24,11 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
 1. **Clone the Repository**
 
    git clone https://github.com/SeaCoffee/AutoSales
+   
    cd AutoSales
 
-2. Setup Frontend
-3. 
+3. Setup Frontend
+4. 
    Open a new terminal, navigate to the frontend directory, and run:
    
    cd frontend

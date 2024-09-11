@@ -48,7 +48,16 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
 
    Environment Variables: Fill out the .env file with the necessary data. (use env_example for example)
 
-4. Access the Platform
+4. Apply Migrations
+
+   To create the necessary tables in the database, run the following commands:
+   
+   docker-compose run --rm app python manage.py makemigrations
+   docker-compose run --rm app python manage.py migrate
+
+   Note: The container name (`app`) may vary depending on your setup. Check your `docker-compose.yml` file for the correct service name.
+
+5. Access the Platform
 
    Open your web browser and go to http://localhost/ to access the platform.
 

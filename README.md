@@ -66,8 +66,8 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
 
 6. Before superuser create, ensure that you fill out the 'role' table in the database:
 
-  INSERT INTO role (name, created_at, updated_at)
-   VALUES 
+    INSERT INTO role (name, created_at, updated_at)
+    VALUES 
    ('buyer', NOW(), NOW()),
    ('seller', NOW(), NOW()),
    ('manager', NOW(), NOW()),

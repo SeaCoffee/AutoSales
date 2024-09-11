@@ -65,7 +65,7 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
    ('admin', NOW(), NOW());
 
    
-   To populate the database with initial data for currencies, car brands, and models, use the following SQL statements.
+7. To populate the database with initial data for currencies, car brands, and models, use the following SQL statements.
    
    To populate the currency table with basic currency information, use this SQL query. This will insert records for USD, EUR, and UAH:
    

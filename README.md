@@ -52,8 +52,6 @@ Welcome to the AutoSales Platform! This repository contains the code for a compr
    docker-compose run --rm app python manage.py makemigrations  
    docker-compose run --rm app python manage.py migrate
 
-   Note: The container name (`app`) may vary depending on your setup. Check your `docker-compose.yml` file for the correct service name.
-
 5. Access the Platform
 
    Open your web browser and go to http://localhost/ to access the platform.

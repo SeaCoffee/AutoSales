@@ -1,19 +1,23 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
-MAINTAINER Some Dev
-
+ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-RUN apk update
-RUN apk add --no-cache gcc musl-dev mariadb-dev
-# for pillow
-RUN apk add --no-cache jpeg-dev zlib-dev libjpeg
-
-RUN mkdir /app
 WORKDIR /app
 
-RUN pip install --upgrade pip
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        default-libmysqlclient-dev \
+        pkg-config \
+        netcat-openbsd \
+        libjpeg-dev \
+        zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt /tmp
+COPY requirements.txt /tmp/requirements.txt
 
-RUN cd /tmp && pip install -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --no-cache-dir -r /tmp/requirements.txt
+
+COPY . /app

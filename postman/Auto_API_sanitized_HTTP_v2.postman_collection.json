@@ -1,0 +1,2137 @@
+{
+  "info": {
+    "_postman_id": "95a5dbc8-9c07-43d1-8d42-2fbeb1f60809",
+    "name": "Auto API - sanitized HTTP collection",
+    "description": "Sanitized Postman HTTP collection for the Auto API portfolio project. The collection contains safe local test data only. WebSocket requests cannot be reliably imported through Postman Collection v2.1 JSON as true WebSocket tabs, so the collection contains the HTTP token endpoint and a folder description with manual WebSocket instructions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "26457983"
+  },
+  "item": [
+    {
+      "name": "00 Setup / public",
+      "item": [
+        {
+          "name": "API check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('success', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "let item = null;",
+                  "if (Array.isArray(data)) item = data[0];",
+                  "else if (Array.isArray(data.data)) item = data.data[0];",
+                  "else if (Array.isArray(data.results)) item = data.results[0];",
+                  "else if (data.id) item = data;",
+                  "if (item && item.id) {",
+                  "    pm.collectionVariables.set('currency_id', item.id);",
+                  "    pm.environment.set('currency_id', item.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/currencies/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "currencies",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Role list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/roles/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "roles",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Car data",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cars/data/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "data",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Before Postman: create admin superuser and seller using shell commands from the ChatGPT answer. Then login admin and create manager through API."
+    },
+    {
+      "name": "01 Auth and manager creation",
+      "item": [
+        {
+          "name": "Login superuser admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.access) {",
+                  "    pm.collectionVariables.set('admin_access_token', data.access);",
+                  "    pm.environment.set('admin_access_token', data.access);",
+                  "}",
+                  "if (data.refresh) {",
+                  "    pm.collectionVariables.set('admin_refresh_token', data.refresh);",
+                  "    pm.environment.set('admin_refresh_token', data.refresh);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"ChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin create manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"manager@example.com\",\n  \"username\": \"manager\",\n  \"password\": \"ChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/managers/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "managers",
+                ""
+              ]
+            },
+            "description": "Requires superuser/admin token. If manager already exists, login manager below."
+          },
+          "response": []
+        },
+        {
+          "name": "Login manager",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.access) {",
+                  "    pm.collectionVariables.set('manager_access_token', data.access);",
+                  "    pm.environment.set('manager_access_token', data.access);",
+                  "}",
+                  "if (data.refresh) {",
+                  "    pm.collectionVariables.set('manager_refresh_token', data.refresh);",
+                  "    pm.environment.set('manager_refresh_token', data.refresh);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"manager\",\n  \"password\": \"ChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login seller",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.access) {",
+                  "    pm.collectionVariables.set('seller_access_token', data.access);",
+                  "    pm.environment.set('seller_access_token', data.access);",
+                  "}",
+                  "if (data.refresh) {",
+                  "    pm.collectionVariables.set('seller_refresh_token', data.refresh);",
+                  "    pm.environment.set('seller_refresh_token', data.refresh);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"seller\",\n  \"password\": \"ChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"buyer@example.com\",\n  \"username\": \"buyer\",\n  \"password\": \"ChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "register",
+                ""
+              ]
+            },
+            "description": "If registration creates inactive buyer, activate via shell/email token."
+          },
+          "response": []
+        },
+        {
+          "name": "Activate account by email token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/activate/{{activation_token}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "activate",
+                "{{activation_token}}",
+                ""
+              ]
+            },
+            "description": "Use the activation token from the registration email/logs. This activates a newly registered user. For local testing, copy the token into the `activation_token` environment variable."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('activation response', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "Password recovery request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/password/recovery/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password",
+                "recovery",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"buyer@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Starts password recovery. The response is intentionally generic, even when the email is not registered."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "Password reset by recovery token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/password/reset/{{recovery_token}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "password",
+                "reset",
+                "{{recovery_token}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Use the recovery token from the recovery email/logs. For local testing, copy the token into the `recovery_token` environment variable."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('reset response', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 400]);",
+                  "});"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login buyer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.access) {",
+                  "    pm.collectionVariables.set('buyer_access_token', data.access);",
+                  "    pm.environment.set('buyer_access_token', data.access);",
+                  "}",
+                  "if (data.refresh) {",
+                  "    pm.collectionVariables.set('buyer_refresh_token', data.refresh);",
+                  "    pm.environment.set('buyer_refresh_token', data.refresh);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"buyer\",\n  \"password\": \"ChangeMe123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{admin_refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{manager_refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh seller",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{seller_refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh buyer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{buyer_refresh_token}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 Superuser/admin dictionary",
+      "item": [
+        {
+          "name": "Admin current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin create brand",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('brand_id', data.id);",
+                  "    pm.environment.set('brand_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Toyota\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/brands/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "brands",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin create model name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('model_name_id', data.id);",
+                  "    pm.environment.set('model_name_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"name\": \"Corolla\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/models/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "models",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin create car dictionary item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('car_id', data.id);",
+                  "    pm.environment.set('car_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"model_name\": \"{{model_name_id}}\",\n  \"body_type\": \"sedan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin car detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/cars/{{car_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "{{car_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 Manager dictionary and moderation",
+      "item": [
+        {
+          "name": "Manager current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{manager_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manager create brand",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('brand_id', data.id);",
+                  "    pm.environment.set('brand_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{manager_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Honda\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/brands/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "brands",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manager create model name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('model_name_id', data.id);",
+                  "    pm.environment.set('model_name_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{manager_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"name\": \"Civic\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/models/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "models",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manager create car dictionary item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('car_id', data.id);",
+                  "    pm.environment.set('car_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{manager_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"model_name\": \"{{model_name_id}}\",\n  \"body_type\": \"sedan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manager update car",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{manager_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"body_type\": \"sedan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/{{car_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "{{car_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manager add user to blacklist",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{manager_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user\": \"{{blacklist_user_id}}\",\n  \"reason\": \"Test moderation block\",\n  \"user_id\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/blacklist/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "blacklist",
+                ""
+              ]
+            },
+            "description": "Set blacklist_user_id to existing buyer id."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "04 Seller listings",
+      "item": [
+        {
+          "name": "Seller current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                "profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller my listings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/listings/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller create listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200/201', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "if (data.id) {",
+                  "    pm.collectionVariables.set('listing_id', data.id);",
+                  "    pm.environment.set('listing_id', data.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"model_name\": \"{{model_name_id}}\",\n  \"body_type\": \"sedan\",\n  \"title\": \"Honda Civic 2018\",\n  \"description\": \"Clean car in good condition. One owner. No accidents.\",\n  \"price\": \"12000.00\",\n  \"currency\": \"{{currency_id}}\",\n  \"region\": 9,\n  \"year\": 2018,\n  \"engine\": \"1.6 petrol\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/listings/create/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "create",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller owner listing detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/listings/{{listing_id}}/owner/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "{{listing_id}}",
+                "owner",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller update listing",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Honda Civic 2018 updated\",\n  \"price\": \"11500.00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/listings/{{listing_id}}/update/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "{{listing_id}}",
+                "update",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller update listing photo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "listing_photo",
+                  "type": "file",
+                  "value": null
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/listings/{{listing_id}}/photo/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "{{listing_id}}",
+                "photo",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller premium stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/listings/{{listing_id}}/premium/stats/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "{{listing_id}}",
+                "premium",
+                "stats",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller request missing brand/model",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand_name\": \"Missing Brand\",\n  \"model_name\": \"Missing Model\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/listings/brands/request/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "brands",
+                "request",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Seller delete listing",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/listings/{{listing_id}}/delete/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "{{listing_id}}",
+                "delete",
+                ""
+              ]
+            },
+            "description": "Run only at the end."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "05 Buyer checks",
+      "item": [
+        {
+          "name": "Buyer current user",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buyer profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/profile/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                "profile",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buyer update profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Buyer\",\n  \"surname\": \"Test\",\n  \"city\": \"Kyiv\",\n  \"phone\": \"+380991112233\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/me/profile/update/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                "profile",
+                "update",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buyer premium request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/me/premium-request/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                "premium-request",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buyer forbidden: create car",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403 forbidden for this role', function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"model_name\": \"{{model_name_id}}\",\n  \"body_type\": \"sedan\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/cars/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buyer forbidden: create listing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('403 forbidden for this role', function () { pm.response.to.have.status(403); });"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{buyer_access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"brand\": \"{{brand_id}}\",\n  \"model_name\": \"{{model_name_id}}\",\n  \"body_type\": \"sedan\",\n  \"title\": \"Buyer should not create listing\",\n  \"description\": \"This should return 403.\",\n  \"price\": \"10000.00\",\n  \"currency\": \"{{currency_id}}\",\n  \"region\": 9,\n  \"year\": 2018,\n  \"engine\": \"1.6 petrol\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/listings/create/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "create",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "06 Public listing read",
+      "item": [
+        {
+          "name": "Public listing list",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/listings/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Public listing detail",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/listings/{{listing_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "{{listing_id}}",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listing regions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/listings/regions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "listings",
+                "regions",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Brand list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('success', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "let item = null;",
+                  "if (Array.isArray(data)) item = data[0];",
+                  "else if (Array.isArray(data.data)) item = data.data[0];",
+                  "else if (Array.isArray(data.results)) item = data.results[0];",
+                  "else if (data.id) item = data;",
+                  "if (item && item.id) {",
+                  "    pm.collectionVariables.set('brand_id', item.id);",
+                  "    pm.environment.set('brand_id', item.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cars/brands/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "brands",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Model name list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('success', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "let item = null;",
+                  "if (Array.isArray(data)) item = data[0];",
+                  "else if (Array.isArray(data.data)) item = data.data[0];",
+                  "else if (Array.isArray(data.results)) item = data.results[0];",
+                  "else if (data.id) item = data;",
+                  "if (item && item.id) {",
+                  "    pm.collectionVariables.set('model_name_id', item.id);",
+                  "    pm.environment.set('model_name_id', item.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cars/models/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "cars",
+                "models",
+                ""
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Currency list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('success', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "let item = null;",
+                  "if (Array.isArray(data)) item = data[0];",
+                  "else if (Array.isArray(data.data)) item = data.data[0];",
+                  "else if (Array.isArray(data.results)) item = data.results[0];",
+                  "else if (data.id) item = data;",
+                  "if (item && item.id) {",
+                  "    pm.collectionVariables.set('currency_id', item.id);",
+                  "    pm.environment.set('currency_id', item.id);",
+                  "}"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/currencies/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "currencies",
+                ""
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "07 WebSocket helper",
+      "item": [
+        {
+          "name": "Seller create socket token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{seller_access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/socket/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "socket",
+                ""
+              ]
+            },
+            "description": "Run this request before opening the WebSocket tab. It saves `socket_token` to both collection variables and environment variables. The actual WebSocket request must be created manually in Postman: New → WebSocket."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const data = pm.response.json();",
+                  "const token = data.token || data.socket_token || data.access;",
+                  "if (token) {",
+                  "    pm.collectionVariables.set('socket_token', token);",
+                  "    pm.environment.set('socket_token', token);",
+                  "}",
+                  "console.log('socket_token saved to environment and collection variables');"
+                ],
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ]
+        }
+      ],
+      "description": "Postman imports WebSocket requests from collection JSON as ordinary HTTP GET requests in many cases.\n\nDo not add a fake GET request here.\n\nCorrect manual setup in Postman:\n1. Run `Seller create socket token`.\n2. Click `New` → `WebSocket`.\n3. Paste: `ws://localhost:8000/api/chat/{{listing_id}}/?token={{socket_token}}`.\n4. Make sure the selected environment is `Auto Local - sanitized`.\n5. Click `Connect`.\n6. Send JSON: `{ \"action\": \"send_message\", \"body\": \"Hello from Postman\" }`.\n\nImportant: the protocol must be `ws://`, not `http://`, and the request type in Postman must be WebSocket, not HTTP GET."
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000"
+    },
+    {
+      "key": "ws_base_url",
+      "value": "ws://localhost:8000"
+    },
+    {
+      "key": "admin_access_token",
+      "value": ""
+    },
+    {
+      "key": "admin_refresh_token",
+      "value": ""
+    },
+    {
+      "key": "manager_access_token",
+      "value": ""
+    },
+    {
+      "key": "manager_refresh_token",
+      "value": ""
+    },
+    {
+      "key": "seller_access_token",
+      "value": ""
+    },
+    {
+      "key": "seller_refresh_token",
+      "value": ""
+    },
+    {
+      "key": "buyer_access_token",
+      "value": ""
+    },
+    {
+      "key": "buyer_refresh_token",
+      "value": ""
+    },
+    {
+      "key": "activation_token",
+      "value": ""
+    },
+    {
+      "key": "recovery_token",
+      "value": ""
+    },
+    {
+      "key": "socket_token",
+      "value": ""
+    },
+    {
+      "key": "brand_id",
+      "value": "1"
+    },
+    {
+      "key": "model_name_id",
+      "value": "1"
+    },
+    {
+      "key": "car_id",
+      "value": "1"
+    },
+    {
+      "key": "currency_id",
+      "value": "1"
+    },
+    {
+      "key": "listing_id",
+      "value": "1"
+    },
+    {
+      "key": "blacklist_user_id",
+      "value": "1"
+    }
+  ]
+}
